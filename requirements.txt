@@ -1,0 +1,12 @@
+numpy
+torch
+torchvision
+opencv-python-headless
+albumentations
+tqdm
+pytorch-fid
+torch-lr-finder
+thop
+Pillow
+lpips
+git+https://github.com/S-aiueo32/lpips-pytorch.git
