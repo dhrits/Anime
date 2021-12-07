@@ -2,7 +2,7 @@
 This repository contains code for my CS 236 project on compressing GANs using knowledge distillation. This project attempts to compress the very popular [Anime GAN V2](https://github.com/bryandlee/animegan2-pytorch) network with weights for 3 different anime styles. Bulk of the data is generated using [CelebA](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) and [Flickr Faces](https://github.com/NVlabs/ffhq-dataset) datasets. For a full explanation of the approach used in this repository, please see the included PDF report above.
 
 ## Getting Started
-1. Download the dataset from [this link](https://dsagardldata.s3.us-west-2.amazonaws.com/CelebA.zip).
+1. Download the dataset from [this link](https://dsagardldata.s3.us-west-2.amazonaws.com/faces.zip).
 2. As a default, unzip the dataset under a ```../data/``` folder relative to the root of this repository (although this can be configured as a parameter to ```main.py```).
 3. Install project requirements by running ```pip install -r requirements.txt```. Use of a virtualenv is highly recommended.
 4. Run ```python main.py``` to begin training. Note that this file has a lot of optional command line arguments which can be inspected by running ```python main.py --help```.
