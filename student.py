@@ -114,6 +114,77 @@ class AnimeNet(nn.Module):
         out = self.upscale5(out)
         return torch.sigmoid(out)
 
+class WideAnimeNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        mobilenet = torchvision.models.mobilenet_v2(width_mult=0.75)
+
+        # We reuse state dict from mobilenet v2 width width_mult == 1.0.
+        # This is not the optimal way to use pretrained models, but in this case
+        # it gives us good initialization for faster convergence.
+        state_dict = torchvision.models.mobilenet_v2(pretrained=True).state_dict()
+        target_dict = mobilenet.state_dict()
+        for k in target_dict.keys():
+            if len(target_dict[k].size()) == 0:
+                continue
+            state_dict[k] = state_dict[k][:target_dict[k].size(0)]
+            if len(state_dict[k].size()) > 1:
+                state_dict[k] = state_dict[k][:, :target_dict[k].size(1)]
+
+        mobilenet.load_state_dict(state_dict)
+
+        weight = mobilenet.features[0][0].weight.detach()
+
+        mobilenet = replace_relu6_with_relu(mobilenet)
+
+        self.features = mobilenet.features[:-2]
+        self.upscale0 = nn.Sequential(
+            nn.Conv2d(120, 72, 1, 1, 0, bias=False),
+            nn.BatchNorm2d(72),
+            nn.ReLU()
+        )
+        self.upscale1 = nn.Sequential(
+            nn.Conv2d(72, 24, 3, 1, 1, bias=False),
+            nn.BatchNorm2d(24),
+            nn.ReLU()
+        )
+        self.upscale2 = nn.Sequential(
+            nn.Conv2d(24, 24, 3, 1, 1, bias=False),
+            nn.BatchNorm2d(24),
+            nn.ReLU()
+        )
+        self.upscale3 = nn.Sequential(
+            nn.Conv2d(24, 16, 3, 1, 1, bias=False),
+            nn.BatchNorm2d(16),
+            nn.ReLU()
+        )
+        self.upscale4 = nn.Sequential(
+            nn.Conv2d(16, 4, 3, 1, 1, bias=False),
+            nn.BatchNorm2d(4),
+            nn.ReLU()
+        )
+        self.upscale5 = nn.Conv2d(4, 3, 3, 1, 1, bias=True)
+
+    def forward(self, x):
+        out = x
+        skip_outs = []
+        for i in range(len(self.features)):
+            out = self.features[i](out)
+            if i in {1, 3, 6, 13}:
+                skip_outs.append(out)
+        out = self.upscale0(out)
+        out = nn.functional.interpolate(out, scale_factor=2, mode='nearest')
+        out = self.upscale1(out + skip_outs[3])
+        out = nn.functional.interpolate(out, scale_factor=2, mode='nearest')
+        out = self.upscale2(out + skip_outs[2])
+        out = nn.functional.interpolate(out, scale_factor=2, mode='nearest')
+        out = self.upscale3(out + skip_outs[1])
+        out = nn.functional.interpolate(out, scale_factor=2, mode='nearest')
+        out = self.upscale4(out + skip_outs[0])
+        out = nn.functional.interpolate(out, scale_factor=2, mode='nearest')
+        out = self.upscale5(out)
+        return torch.sigmoid(out)
+
 
 # This model is a combination of segmentation model from: https://github.com/Snapchat/snapml-templates
 # and the fast-depth model from: https://github.com/dwofk/fast-depth
