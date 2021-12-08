@@ -36,7 +36,7 @@ def random_seed(seed=1337):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-b", "--batch_size", help="Training data batch size", type=int, default=64)
+    parser.add_argument("-b", "--batch_size", help="Training data batch size", type=int, default=42)
     parser.add_argument("-w", "--workers", help="Number of workers for dataloading", type=int, default=2)
     parser.add_argument("-s", "--steps", help="Number of steps through training data", type=int, default=200000)
     parser.add_argument("--validation_frequency", help="Frequency with which to provide validation stats", type=int, default=200)
